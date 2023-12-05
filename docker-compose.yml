@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  doctors:
+    build:
+      context: ./doctors
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/devops
+    networks:
+      - devops_network
+
+  appointments:
+    build:
+      context: ./appointments
+    ports:
+      - "7070:7070"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/devops
+    networks:
+      - devops_network
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - doctors
+      - appointments
+    environment:
+      - DOCTORS_SERVICE_URL=http://doctors:9090
+      - APPOINTMENTS_SERVICE_URL=http://appointments:7070
+    networks:
+      - devops_network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - devops_network
+
+networks:
+  devops_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
