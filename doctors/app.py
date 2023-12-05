@@ -1,24 +1,32 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
+from pymongo import MongoClient
+
 app = Flask(__name__)
 
-doctors = [
-  { 'id': "1",'firstName': "Muhammad Ali", 'lastName': "Kahoot", 'speciality':"DevOps"  },
-  { 'id': "2",'firstName': "Good", 'lastName': "Doctor",'speciality':"Test"  }
-]
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["devops"]  
+doctors_collection = db["doctors"]
 
 @app.route('/hello')
 def hello():
-  greeting = "Hello world!"
-  return greeting
+    greeting = "Hello world!"
+    return greeting
 
 @app.route('/doctors', methods=["GET"])
 def getDoctors():
-  return jsonify(doctors)
+    # Fetch doctors from MongoDB
+    doctors = list(doctors_collection.find({}, {"_id": 0}))
+    return jsonify(doctors)
 
 @app.route('/doctor/<id>', methods=["GET"])
 def getDoctor(id):
-  id = int(id) - 1
-  return jsonify({"id": doctors[id].id, "firstName": doctors[id].firstName, "lastName": doctors[id].lastName, "speciality": doctors[id].speciality})
+    # Fetch a specific doctor from MongoDB by id
+    doctor = doctors_collection.find_one({"id": id}, {"_id": 0})
+    if doctor:
+        return jsonify(doctor)
+    else:
+        return jsonify({"error": "Doctor not found"}), 404
 
 if __name__ == "__main__":
-  app.run(host="0.0.0.0",port=9090)
+    app.run(host="0.0.0.0", port=9090)

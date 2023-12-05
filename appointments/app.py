@@ -1,27 +1,32 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
+from pymongo import MongoClient
+
 app = Flask(__name__)
 
-appointments = [
-  { 'id': "1",'doctor': "1", 'date': "21 Nov 2023", 'rating':"Good"  },
-  { 'id': "2",'doctor': "1", 'date': "22 Nov 2023", 'rating':"Bad"  },
-  { 'id': "3",'doctor': "2", 'date': "22 Nov 2023", 'rating':"Good"  },
-  { 'id': "4",'doctor': "1", 'date': "22 Nov 2023", 'rating':"Bad"  },
-  { 'id': "5",'doctor': "2", 'date': "22 Nov 2023", 'rating':"Good"  },
-]
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["devops"]  
+appointments_collection = db["appointments"]
 
 @app.route('/hello')
 def hello():
-  greeting = "Hello world!"
-  return greeting
+    greeting = "Hello world!"
+    return greeting
 
 @app.route('/appointments', methods=["GET"])
 def getAppointments():
-  return jsonify(appointments)
+    # Fetch appointments from MongoDB
+    appointments = list(appointments_collection.find({}, {"_id": 0}))
+    return jsonify(appointments)
 
 @app.route('/appointment/<id>', methods=["GET"])
 def getAppointment(id):
-  id = int(id) - 1
-  return jsonify({"id": appointments[id].id, "doctor": appointments[id].doctor, "date": appointments[id].date, "rating": appointments[id].rating})
+    # Fetch a specific appointment from MongoDB by id
+    appointment = appointments_collection.find_one({"id": id}, {"_id": 0})
+    if appointment:
+        return jsonify(appointment)
+    else:
+        return jsonify({"error": "Appointment not found"}), 404
 
 if __name__ == "__main__":
-  app.run(host="0.0.0.0",port=7070)
+    app.run(host="0.0.0.0", port=7070)
