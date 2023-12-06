@@ -31,9 +31,9 @@ jobs:
 
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-        docker push appointments:latest
-        docker push doctors:latest
-        docker push frontend:latest
+        docker push appointments-service:latest
+        docker push doctors-service:latest
+        docker push frontend-service:latest
 
   update-docker-compose:
     runs-on: ubuntu-latest
