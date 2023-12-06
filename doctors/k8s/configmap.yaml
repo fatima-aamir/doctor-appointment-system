@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: doctors-configmap
+data:
+  details.txt: |
+    Hello! I am Fatima.
+    I work as a ML engineer.
+    This is a brief introduction about myself.

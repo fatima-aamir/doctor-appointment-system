@@ -15,6 +15,9 @@ spec:
       containers:
       - name: doctors
         image: docker.io/library/doctors:latest
+        volumeMounts:
+        - name: details-volume
+          mountPath: /user/details.txt
         resources:
           limits:
             cpu: "0.5"  
@@ -34,6 +37,13 @@ spec:
             port: 9090
           initialDelaySeconds: 3
           periodSeconds: 5
+      volumes:
+      - name: details-volume
+        configMap:
+          name: doctors-configmap
+          items:
+          - key: details.txt
+            path: details.txt
 ---
 apiVersion: v1
 kind: Service
