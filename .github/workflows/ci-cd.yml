@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'appointments/**'
+  push:
+    paths:
+      - 'appointments/**'
+      - 'doctors/**'
+      - 'frontend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/ci-cd.yml'
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and push Docker images
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker build -t appointments:latest -f ./appointments/Dockerfile .
+        docker build -t doctors:latest -f ./doctors/Dockerfile .
+        docker build -t frontend:latest -f ./frontend/Dockerfile .
+
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+        docker push appointments:latest
+        docker push doctors:latest
+        docker push frontend:latest
+
+  update-docker-compose:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Update Docker Compose file
+      run: |
+        sed -i 's/appointments:.*/appointments:latest/' docker-compose.yml
+        sed -i 's/doctors:.*/doctors:latest/' docker-compose.yml
+        sed -i 's/frontend:.*/frontend:latest/' docker-compose.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to Docker Compose
+      run: docker-compose up -d
