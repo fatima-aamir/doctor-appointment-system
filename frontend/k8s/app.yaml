@@ -12,9 +12,15 @@ spec:
       labels:
         app: frontend
     spec:
+      securityContext:
+        runAsUser: 1000  # Run the container as a non-root user
+      initContainers:
+      - name: init-container
+        image: ubuntu:latest
+        command: ['sh', '-c', 'echo "Your Name: Ali Kahoot" && sleep 5']
       containers:
       - name: frontend
-        image: docker.io/library/frontend:latest
+        image: fatima4321/frontend-service:latest
         env:
         - name: DOCTORS_SERVICE_URL
           value: "http://doctors-service:9090"
@@ -22,11 +28,11 @@ spec:
           value: "http://appointments-service:7070"
         resources:
           limits:
-            cpu: "0.5"  
-            memory: "512Mi"  
+            cpu: "0.5"
+            memory: "512Mi"
           requests:
-            cpu: "0.1"  
-            memory: "256Mi"  
+            cpu: "0.1"
+            memory: "256Mi"
         livenessProbe:
           httpGet:
             path: /hello

@@ -12,32 +12,38 @@ spec:
       labels:
         app: appointments
     spec:
+      securityContext:
+        runAsUser: 1000  # Run the container as a non-root user
+      initContainers:
+      - name: init-container
+        image: ubuntu:latest
+        command: ['sh', '-c', 'echo "Your Name: Ali Kahoot" && sleep 5']
       containers:
       - name: appointments
-        image: docker.io/library/appointments:latest
+        image: fatima4321/appointments-service:latest
         env:
-        - name: MONGO_URI
-          valueFrom:
-            secretKeyRef:
-              name: mongo-secret
-              key: MONGO_URI
-        - name: NAME
-          valueFrom:
-            secretKeyRef:
-              name: appointments-secret
-              key: NAME
-        - name: PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: appointments-secret
-              key: PASSWORD
+          - name: MONGO_URI
+            valueFrom:
+              secretKeyRef:
+                name: mongo-secret
+                key: MONGO_URI
+          - name: NAME
+            valueFrom:
+              secretKeyRef:
+                name: appointments-secret
+                key: NAME
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: appointments-secret
+                key: PASSWORD
         resources:
           limits:
-            cpu: "0.5"  
-            memory: "512Mi" 
+            cpu: "0.5"
+            memory: "512Mi"
           requests:
-            cpu: "0.1"  
-            memory: "256Mi"  
+            cpu: "0.1"
+            memory: "256Mi"
         livenessProbe:
           httpGet:
             path: /hello
