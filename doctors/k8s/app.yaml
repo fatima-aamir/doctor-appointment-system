@@ -17,7 +17,7 @@ spec:
       initContainers:
       - name: init-container
         image: ubuntu:latest
-        command: ['sh', '-c', 'echo "Your Name: Ali Kahoot" && sleep 5']
+        command: ['sh', '-c', 'echo "Your Name: Fatima Aamir" && sleep 5']
       containers:
       - name: doctors
         image: fatima4321/doctors-service:latest
