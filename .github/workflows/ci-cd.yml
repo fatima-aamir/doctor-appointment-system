@@ -4,36 +4,63 @@ on:
   pull_request:
     paths:
       - 'appointments/**'
-  push:
-    paths:
-      - 'appointments/**'
       - 'doctors/**'
       - 'frontend/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/ci-cd.yml'
+  push:
+    branches:
+      - main
 
 jobs:
-  build-and-push-docker:
+  build-and-push-docker-appointments:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Build and push Docker images
+    - name: Build and push Docker image for Appointments microservice
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker build -t fatima4321/appointments-service:latest -f ./appointments/Dockerfile .
-        docker build -t fatima4321/doctors-service:latest -f ./doctors/Dockerfile .
-        docker build -t fatima4321/frontend-service:latest -f ./frontend/Dockerfile .
-
+        DOCKER_TAG=$(echo $GITHUB_SHA | head -c 7)
+        docker build -t fatima4321/appointments-service:$DOCKER_TAG -f ./appointments/Dockerfile .
         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker push fatima4321/appointments-service:$DOCKER_TAG
 
-        docker push fatima4321/appointments-service:latest
-        docker push fatima4321/doctors-service:latest
-        docker push fatima4321/frontend-service:latest
+  build-and-push-docker-doctors:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and push Docker image for Doctors microservice
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        DOCKER_TAG=$(echo $GITHUB_SHA | head -c 7)
+        docker build -t fatima4321/doctors-service:$DOCKER_TAG -f ./doctors/Dockerfile .
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker push fatima4321/doctors-service:$DOCKER_TAG
+
+  build-and-push-docker-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and push Docker image for Frontend microservice
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        DOCKER_TAG=$(echo $GITHUB_SHA | head -c 7)
+        docker build -t fatima4321/frontend-service:$DOCKER_TAG -f ./frontend/Dockerfile .
+        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        docker push fatima4321/frontend-service:$DOCKER_TAG
 
   update-docker-compose:
     runs-on: ubuntu-latest
